@@ -10,3 +10,10 @@ Text Domain: mangascrape
 Domain Path: /languages
 */
 
+require_once( 'classes/classes.php' );
+
+use mangascrape\AdminTools;
+
+if ( is_admin() ) {
+	$admin = new AdminTools();
+}
