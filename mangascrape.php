@@ -12,8 +12,13 @@ Domain Path: /languages
 
 require_once( 'classes/classes.php' );
 
-use mangascrape\AdminTools;
+// Define plugin constants
+define( 'MANGASCRAPE_UPLOAD_DIR', wp_upload_dir()['basedir'] . '/mangascrape/' );
 
+// Initilize main class
+new \mangascrape\MangaScrape( __FILE__ );
+
+// Initiliaze admin class
 if ( is_admin() ) {
-	$admin = new AdminTools();
+	new \mangascrape\AdminTools();
 }

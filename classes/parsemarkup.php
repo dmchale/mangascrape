@@ -2,7 +2,7 @@
 
 namespace mangascrape;
 
-class ParseMarkup {
+class MSParseMarkup {
 
 	private $results = array();
 
