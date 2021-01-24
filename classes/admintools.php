@@ -50,7 +50,7 @@ class AdminTools {
 	private function make_pdfs() {
 
 		// Check nonce
-		check_admin_referer( 'explode_zips', 'explode_zips_nonce' );
+		check_admin_referer( 'make_pdfs', 'make_pdfs_nonce' );
 
 		// Check permissions
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -71,8 +71,8 @@ class AdminTools {
 		MSHelpers::create_dir( $manga_folder_pdfs, true );
 
 		// Make the PDF files
-		$manga_folder_zips = $manga_folder_root . '/zips';
-		$pdf_maker         = new MSPDFMaker( $manga_folder_zips, $manga_folder_pdfs );
+		$manga_folder_jpgs = $manga_folder_root . '/jpgs';
+		$pdf_maker         = new MSPDFMaker( $manga_folder_jpgs, $manga_folder_pdfs );
 		$pdf_maker->make_pdfs();
 
 	}

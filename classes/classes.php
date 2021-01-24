@@ -5,3 +5,4 @@ require_once( 'admintools.php' );
 require_once( 'parsemarkup.php' );
 require_once( 'downloader.php' );
 require_once( 'exploder.php' );
+require_once( 'pdfmaker.php' );
