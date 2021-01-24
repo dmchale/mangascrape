@@ -15,7 +15,7 @@ class MSParseMarkup {
 
 		$html = str_get_html( $code_to_scrape );
 
-		foreach ($html->find('a') as $item) {
+		foreach ( $html->find( 'a' ) as $item ) {
 			if ( isset( $item->attr['download'] ) ) {
 				$this->results[] = $item->attr['href'];
 			}

@@ -1,4 +1,5 @@
 <?php
+
 namespace mangascrape;
 
 class MangaScrape {

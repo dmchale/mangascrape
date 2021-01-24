@@ -1,4 +1,5 @@
 <?php
+
 namespace mangascrape;
 
 class AdminTools {
@@ -20,7 +21,10 @@ class AdminTools {
 	 * Register Tools menu with WordPress
 	 */
 	public function admin_menu() {
-		$hook = add_management_page( 'MangaScrape', 'MangaScrape', 'install_plugins', 'magascrape_admin', array( $this, 'admin_page' ), '' );
+		$hook = add_management_page( 'MangaScrape', 'MangaScrape', 'install_plugins', 'magascrape_admin', array(
+			$this,
+			'admin_page'
+		), '' );
 		add_action( "load-$hook", array( $this, 'admin_page_load' ) );
 	}
 
@@ -30,13 +34,13 @@ class AdminTools {
 	function admin_page_load() {
 		// ...
 		if ( isset( $_POST['ms_action'] ) ) {
-		    if ( 'start_scrape' === $_POST['ms_action'] ) {
+			if ( 'start_scrape' === $_POST['ms_action'] ) {
 				$this->start_scrape();
 			} elseif ( 'start_explode_zips' === $_POST['ms_action'] ) {
-			    $this->explode_zips();
-            } elseif ( 'start_make_pdfs' === $_POST['ms_action'] ) {
-			    $this->make_pdfs();
-            }
+				$this->explode_zips();
+			} elseif ( 'start_make_pdfs' === $_POST['ms_action'] ) {
+				$this->make_pdfs();
+			}
 		}
 	}
 
@@ -54,7 +58,7 @@ class AdminTools {
 		}
 
 		// Collect vars
-		$folder_name    = $_POST['folder_name'];
+		$folder_name = $_POST['folder_name'];
 
 		// Confirm we have all the vars we expect
 		if ( ! $folder_name ) {
@@ -62,16 +66,16 @@ class AdminTools {
 		}
 
 		// Create our destination folder so we can save the PDF files somewhere
-		$manga_folder_root  = MANGASCRAPE_UPLOAD_DIR . MSHelpers::make_valid_foldername( $folder_name );
-		$manga_folder_pdfs  = $manga_folder_root . '/pdfs';
+		$manga_folder_root = MANGASCRAPE_UPLOAD_DIR . MSHelpers::make_valid_foldername( $folder_name );
+		$manga_folder_pdfs = $manga_folder_root . '/pdfs';
 		MSHelpers::create_dir( $manga_folder_pdfs, true );
 
 		// Make the PDF files
-		$manga_folder_zips  = $manga_folder_root . '/zips';
-		$pdf_maker = new MSPDFMaker( $manga_folder_zips, $manga_folder_pdfs );
+		$manga_folder_zips = $manga_folder_root . '/zips';
+		$pdf_maker         = new MSPDFMaker( $manga_folder_zips, $manga_folder_pdfs );
 		$pdf_maker->make_pdfs();
 
-    }
+	}
 
 
 	/**
@@ -88,7 +92,7 @@ class AdminTools {
 		}
 
 		// Collect vars
-		$folder_name    = $_POST['folder_name'];
+		$folder_name = $_POST['folder_name'];
 
 		// Confirm we have all the vars we expect
 		if ( ! $folder_name ) {
@@ -96,16 +100,16 @@ class AdminTools {
 		}
 
 		// Create our destination folder so we can explode all the zip files somewhere
-		$manga_folder_root  = MANGASCRAPE_UPLOAD_DIR . MSHelpers::make_valid_foldername( $folder_name );
-		$manga_folder_jpgs  = $manga_folder_root . '/jpgs';
+		$manga_folder_root = MANGASCRAPE_UPLOAD_DIR . MSHelpers::make_valid_foldername( $folder_name );
+		$manga_folder_jpgs = $manga_folder_root . '/jpgs';
 		MSHelpers::create_dir( $manga_folder_jpgs, true );
 
 		// Explode all the zips now
-		$manga_folder_zips  = $manga_folder_root . '/zips';
-		$exploder = new MSExploder( $manga_folder_zips, $manga_folder_jpgs );
+		$manga_folder_zips = $manga_folder_root . '/zips';
+		$exploder          = new MSExploder( $manga_folder_zips, $manga_folder_jpgs );
 		$exploder->detonate();
 
-    }
+	}
 
 
 	/**
@@ -113,8 +117,8 @@ class AdminTools {
 	 */
 	private function start_scrape() {
 
-	    // Check nonce
-	    check_admin_referer( 'get_zips', 'get_zips_nonce' );
+		// Check nonce
+		check_admin_referer( 'get_zips', 'get_zips_nonce' );
 
 		// Check permissions
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -130,25 +134,25 @@ class AdminTools {
 			wp_die( 'Variables missing. Please try again' );
 		}
 
-        // Parse the links from the provided markup
-        $parser = new MSParseMarkup( $code_to_scrape );
-        $this->results = $parser->get_results();
+		// Parse the links from the provided markup
+		$parser        = new MSParseMarkup( $code_to_scrape );
+		$this->results = $parser->get_results();
 
-        // Only process if we have results in our markup
-        if ( sizeof( $this->results ) > 0 ) {
+		// Only process if we have results in our markup
+		if ( sizeof( $this->results ) > 0 ) {
 
-            // Create our destination folders
-            $manga_folder_root = MANGASCRAPE_UPLOAD_DIR . MSHelpers::make_valid_foldername( $folder_name );
-            MSHelpers::create_dir( $manga_folder_root );
+			// Create our destination folders
+			$manga_folder_root = MANGASCRAPE_UPLOAD_DIR . MSHelpers::make_valid_foldername( $folder_name );
+			MSHelpers::create_dir( $manga_folder_root );
 
-            $manga_folder_zips = $manga_folder_root . '/zips';
-            MSHelpers::create_dir( $manga_folder_zips );
+			$manga_folder_zips = $manga_folder_root . '/zips';
+			MSHelpers::create_dir( $manga_folder_zips );
 
-            // Download the files
-            $downloader = new MSDownloader( $this->results, $manga_folder_zips );
-            $this->message = $downloader->process_downloads();
+			// Download the files
+			$downloader    = new MSDownloader( $this->results, $manga_folder_zips );
+			$this->message = $downloader->process_downloads();
 
-        }
+		}
 
 	}
 
@@ -160,6 +164,7 @@ class AdminTools {
 		// Check permissions
 		if ( ! current_user_can( 'manage_options' ) ) {
 			echo 'You do not have permissions to view this page, cheater';
+
 			return;
 		}
 
@@ -167,10 +172,10 @@ class AdminTools {
 		echo '<p>Download manga with the tool below!</p>';
 		if ( $this->results ) {
 			echo '<p style="color:red;">';
-            foreach ( $this->results as $result ) {
-	            echo basename( $result ) . '<br>';
-            }
-            echo '</p>';
+			foreach ( $this->results as $result ) {
+				echo basename( $result ) . '<br>';
+			}
+			echo '</p>';
 		}
 		if ( $this->message ) {
 			echo '<p style="color:red;">';
@@ -181,60 +186,84 @@ class AdminTools {
 		// See if one of the tabs is currently selected
 		$tab = '';
 		if ( isset( $_GET['tab'] ) ) {
-		    switch ( strtolower( $_GET['tab'] ) ) {
-                case 'explode_zips':
-                case 'make_pdfs':
-                    $tab = strtolower( $_GET['tab'] );
-                    break;
-            }
-        }
+			switch ( strtolower( $_GET['tab'] ) ) {
+				case 'explode_zips':
+				case 'make_pdfs':
+					$tab = strtolower( $_GET['tab'] );
+					break;
+			}
+		}
 
 		?>
 
         <nav class="nav-tab-wrapper">
-            <a href="?page=magascrape_admin" class="nav-tab <?php if ( '' === $tab ) { echo 'nav-tab-active'; } ?>">Download Zips</a>
-            <a href="?page=magascrape_admin&tab=explode_zips" class="nav-tab <?php if ( 'explode_zips' === $tab ) { echo 'nav-tab-active'; } ?>">Explode Zips</a>
-            <a href="?page=magascrape_admin&tab=make_pdfs" class="nav-tab <?php if ( 'make_pdfs' === $tab ) { echo 'nav-tab-active'; } ?>">Make PDFs</a>
+            <a href="?page=magascrape_admin" class="nav-tab <?php if ( '' === $tab ) {
+				echo 'nav-tab-active';
+			} ?>">Download Zips</a>
+            <a href="?page=magascrape_admin&tab=explode_zips" class="nav-tab <?php if ( 'explode_zips' === $tab ) {
+				echo 'nav-tab-active';
+			} ?>">Explode Zips</a>
+            <a href="?page=magascrape_admin&tab=make_pdfs" class="nav-tab <?php if ( 'make_pdfs' === $tab ) {
+				echo 'nav-tab-active';
+			} ?>">Make PDFs</a>
         </nav>
 
-        <div class="tab_download_zips" style="display:<?php if ( '' === $tab ) { echo 'block'; } else { echo 'none'; } ?>">
+        <div class="tab_download_zips" style="display:<?php if ( '' === $tab ) {
+			echo 'block';
+		} else {
+			echo 'none';
+		} ?>">
             <form method="post">
-                <?php wp_nonce_field( 'get_zips', 'get_zips_nonce' ); ?>
-                <input type="hidden" name="ms_action" value="start_scrape" />
+				<?php wp_nonce_field( 'get_zips', 'get_zips_nonce' ); ?>
+                <input type="hidden" name="ms_action" value="start_scrape"/>
                 <div style="padding-top:20px;">
-                    <input type="text" name="folder_name" placeholder="Folder to Save To" required="required" aria-required="true">
+                    <input type="text" name="folder_name" placeholder="Folder to Save To" required="required"
+                           aria-required="true">
                 </div>
                 <div style="padding-top:20px;">
-                    <textarea name="code_to_scrape" placeholder="Copy/paste the `manga_series_list` element here" style="width:50em;height:20em;" required="required" aria-required="true"></textarea>
+                    <textarea name="code_to_scrape" placeholder="Copy/paste the `manga_series_list` element here"
+                              style="width:50em;height:20em;" required="required" aria-required="true"></textarea>
                 </div>
                 <div style="padding-top:20px;">
-                    <input type="submit" name="submit" value="Parse HTML and Download" />
+                    <input type="submit" name="submit" value="Parse HTML and Download"/>
                 </div>
             </form>
         </div>
 
-        <div class="tab_explode_zips" style="display:<?php if ( 'explode_zips' === $tab ) { echo 'block'; } else { echo 'none'; } ?>">
+        <div class="tab_explode_zips" style="display:<?php if ( 'explode_zips' === $tab ) {
+			echo 'block';
+		} else {
+			echo 'none';
+		} ?>">
             <form method="post">
 				<?php wp_nonce_field( 'explode_zips', 'explode_zips_nonce' ); ?>
-                <input type="hidden" name="ms_action" value="start_explode_zips" />
+                <input type="hidden" name="ms_action" value="start_explode_zips"/>
                 <div style="padding-top:20px;">
-                    <input type="text" name="folder_name" style="width:50em;" placeholder="Folder the zips are in (eg: `The_Promised_Neverland`)" required="required" aria-required="true">
+                    <input type="text" name="folder_name" style="width:50em;"
+                           placeholder="Folder the zips are in (eg: `The_Promised_Neverland`)" required="required"
+                           aria-required="true">
                 </div>
                 <div style="padding-top:20px;">
-                    <input type="submit" name="submit" value="Explode!" />
+                    <input type="submit" name="submit" value="Explode!"/>
                 </div>
             </form>
         </div>
 
-        <div class="tab_make_pdfs" style="display:<?php if ( 'make_pdfs' === $tab ) { echo 'block'; } else { echo 'none'; } ?>">
+        <div class="tab_make_pdfs" style="display:<?php if ( 'make_pdfs' === $tab ) {
+			echo 'block';
+		} else {
+			echo 'none';
+		} ?>">
             <form method="post">
 				<?php wp_nonce_field( 'make_pdfs', 'make_pdfs_nonce' ); ?>
-                <input type="hidden" name="ms_action" value="start_make_pdfs" />
+                <input type="hidden" name="ms_action" value="start_make_pdfs"/>
                 <div style="padding-top:20px;">
-                    <input type="text" name="folder_name" style="width:50em;" placeholder="Folder the jpgs are in (eg: `The_Promised_Neverland`)" required="required" aria-required="true">
+                    <input type="text" name="folder_name" style="width:50em;"
+                           placeholder="Folder the jpgs are in (eg: `The_Promised_Neverland`)" required="required"
+                           aria-required="true">
                 </div>
                 <div style="padding-top:20px;">
-                    <input type="submit" name="submit" value="Make PDF files" />
+                    <input type="submit" name="submit" value="Make PDF files"/>
                 </div>
             </form>
         </div>

@@ -1,4 +1,5 @@
 <?php
+
 namespace mangascrape;
 
 class MSDownloader {
@@ -7,16 +8,16 @@ class MSDownloader {
 	private $destination_folder = '';
 
 	function __construct( $results, $destination_folder ) {
-		$this->results              = ( array ) $results;
-		$this->destination_folder   = $destination_folder;
+		$this->results            = ( array ) $results;
+		$this->destination_folder = $destination_folder;
 	}
 
 	public function process_downloads() {
 
 		foreach ( $this->results as $result ) {
 
-			$file_url   = $result;
-			$file_name  = basename( $result );
+			$file_url  = $result;
+			$file_name = basename( $result );
 
 			// Download the file to memory
 			$tmp_file = download_url( $file_url );

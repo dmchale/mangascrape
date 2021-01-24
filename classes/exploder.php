@@ -1,4 +1,5 @@
 <?php
+
 namespace mangascrape;
 
 class MSExploder {
@@ -7,14 +8,14 @@ class MSExploder {
 	private $destination_folder = '';
 
 	function __construct( $source_folder, $destination_folder ) {
-		$this->source_folder        = $source_folder;
-		$this->destination_folder   = $destination_folder;
+		$this->source_folder      = $source_folder;
+		$this->destination_folder = $destination_folder;
 	}
 
 	public function detonate() {
 
 		$str_glob = $this->source_folder . '/*.zip';
-		$files = glob( $str_glob );
+		$files    = glob( $str_glob );
 
 		$za = new \ZipArchive;
 

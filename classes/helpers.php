@@ -1,4 +1,5 @@
 <?php
+
 namespace mangascrape;
 
 /**
@@ -20,13 +21,13 @@ class MSHelpers {
 	public static function make_valid_foldername( $str ) {
 
 		// Replace any of "[]()." with _
-		$str = mb_ereg_replace("([\[\]\(\).])", '_', $str );
+		$str = mb_ereg_replace( "([\[\]\(\).])", '_', $str );
 
 		// Replace anything NOT a word, space, digit, dash or underscore with "nothing"
-		$str = mb_ereg_replace("([^\w\s\d\-_])", '', $str );
+		$str = mb_ereg_replace( "([^\w\s\d\-_])", '', $str );
 
 		// Remove any runs of periods
-		$str = mb_ereg_replace("([\.]{2,})", '', $str);
+		$str = mb_ereg_replace( "([\.]{2,})", '', $str );
 
 		return $str;
 
