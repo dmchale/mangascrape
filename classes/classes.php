@@ -4,3 +4,4 @@ require_once( 'mangascrape.php' );
 require_once( 'admintools.php' );
 require_once( 'parsemarkup.php' );
 require_once( 'downloader.php' );
+require_once( 'exploder.php' );

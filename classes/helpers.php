@@ -36,17 +36,22 @@ class MSHelpers {
 	 * Create folder and do error handling as needed
 	 *
 	 * @param $new_dir
+	 * @param bool $hide_errors
 	 */
-	public static function create_dir( $new_dir ) {
+	public static function create_dir( $new_dir, $hide_errors = false ) {
 
 		// First check to see if the folder exists already
 		if ( is_dir( $new_dir ) ) {
-			wp_die( 'ERROR: Folder with the name `' . $new_dir . '` already exists. Try something unique!' );
+			if ( ! $hide_errors ) {
+				wp_die( 'ERROR: Folder with the name `' . $new_dir . '` already exists. Try something unique!' );
+			}
 		}
 
 		// Now try and create the folder
 		if ( ! mkdir( $new_dir, 0700 ) ) {
-			wp_die( 'Failed creating `' . $new_dir . '` directory, check folder permissions.' );
+			if ( ! $hide_errors ) {
+				wp_die( 'Failed creating `' . $new_dir . '` directory, check folder permissions.' );
+			}
 		}
 
 	}
