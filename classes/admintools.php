@@ -34,9 +34,44 @@ class AdminTools {
 				$this->start_scrape();
 			} elseif ( 'start_explode_zips' === $_POST['ms_action'] ) {
 			    $this->explode_zips();
+            } elseif ( 'start_make_pdfs' === $_POST['ms_action'] ) {
+			    $this->make_pdfs();
             }
 		}
 	}
+
+	/**
+	 * Create PDF files from the JPG files we already downloaded
+	 */
+	private function make_pdfs() {
+
+		// Check nonce
+		check_admin_referer( 'explode_zips', 'explode_zips_nonce' );
+
+		// Check permissions
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		// Collect vars
+		$folder_name    = $_POST['folder_name'];
+
+		// Confirm we have all the vars we expect
+		if ( ! $folder_name ) {
+			wp_die( 'Variables missing. Please try again' );
+		}
+
+		// Create our destination folder so we can save the PDF files somewhere
+		$manga_folder_root  = MANGASCRAPE_UPLOAD_DIR . MSHelpers::make_valid_foldername( $folder_name );
+		$manga_folder_pdfs  = $manga_folder_root . '/pdfs';
+		MSHelpers::create_dir( $manga_folder_pdfs, true );
+
+		// Make the PDF files
+		$manga_folder_zips  = $manga_folder_root . '/zips';
+		$pdf_maker = new MSPDFMaker( $manga_folder_zips, $manga_folder_pdfs );
+		$pdf_maker->make_pdfs();
+
+    }
 
 
 	/**
@@ -148,7 +183,8 @@ class AdminTools {
 		if ( isset( $_GET['tab'] ) ) {
 		    switch ( strtolower( $_GET['tab'] ) ) {
                 case 'explode_zips':
-                    $tab = 'explode_zips';
+                case 'make_pdfs':
+                    $tab = strtolower( $_GET['tab'] );
                     break;
             }
         }
@@ -158,6 +194,7 @@ class AdminTools {
         <nav class="nav-tab-wrapper">
             <a href="?page=magascrape_admin" class="nav-tab <?php if ( '' === $tab ) { echo 'nav-tab-active'; } ?>">Download Zips</a>
             <a href="?page=magascrape_admin&tab=explode_zips" class="nav-tab <?php if ( 'explode_zips' === $tab ) { echo 'nav-tab-active'; } ?>">Explode Zips</a>
+            <a href="?page=magascrape_admin&tab=make_pdfs" class="nav-tab <?php if ( 'make_pdfs' === $tab ) { echo 'nav-tab-active'; } ?>">Make PDFs</a>
         </nav>
 
         <div class="tab_download_zips" style="display:<?php if ( '' === $tab ) { echo 'block'; } else { echo 'none'; } ?>">
@@ -185,6 +222,19 @@ class AdminTools {
                 </div>
                 <div style="padding-top:20px;">
                     <input type="submit" name="submit" value="Explode!" />
+                </div>
+            </form>
+        </div>
+
+        <div class="tab_make_pdfs" style="display:<?php if ( 'make_pdfs' === $tab ) { echo 'block'; } else { echo 'none'; } ?>">
+            <form method="post">
+				<?php wp_nonce_field( 'make_pdfs', 'make_pdfs_nonce' ); ?>
+                <input type="hidden" name="ms_action" value="start_make_pdfs" />
+                <div style="padding-top:20px;">
+                    <input type="text" name="folder_name" style="width:50em;" placeholder="Folder the jpgs are in (eg: `The_Promised_Neverland`)" required="required" aria-required="true">
+                </div>
+                <div style="padding-top:20px;">
+                    <input type="submit" name="submit" value="Make PDF files" />
                 </div>
             </form>
         </div>
