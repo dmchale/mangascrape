@@ -21,7 +21,7 @@ class MangaScrape {
 
 		// Make sure we create our folder on plugin activation
 		if ( ! is_dir( MANGASCRAPE_UPLOAD_DIR ) ) {
-			if ( ! mkdir( MANGASCRAPE_UPLOAD_DIR, 0700 ) ) {
+			if ( ! @mkdir( MANGASCRAPE_UPLOAD_DIR, 0700 ) ) {
 				wp_die( 'Failed creating /wp-content/uploads/mangascrape/ directory during plugin activation' );
 			}
 		}

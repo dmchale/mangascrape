@@ -17,7 +17,7 @@ class MSExploder {
 		$str_glob = $this->source_folder . '/*.zip';
 		$files    = glob( $str_glob );
 
-		$za = new \ZipArchive;
+		$zip_archive = new \ZipArchive;
 
 		foreach ( $files as $file ) {
 
@@ -26,9 +26,9 @@ class MSExploder {
 			MSHelpers::create_dir( $folder_name, true );
 
 			// Open zip and explode to our desired location
-			if ( true === $za->open( $file ) ) {
-				$za->extractTo( $folder_name );
-				$za->close();
+			if ( true === $zip_archive->open( $file ) ) {
+				$zip_archive->extractTo( $folder_name );
+				$zip_archive->close();
 				echo '`' . basename( $file ) . '` successfully exploded!<br />';
 			} else {
 				echo 'Failed to unpack ' . basename( $file );

@@ -75,6 +75,9 @@ class AdminTools {
 		$pdf_maker         = new MSPDFMaker( $manga_folder_jpgs, $manga_folder_pdfs );
 		$pdf_maker->make_pdfs();
 
+		// Echo message to user when we're done
+		$this->message .= 'Completed making PDF files!';
+
 	}
 
 
@@ -108,6 +111,9 @@ class AdminTools {
 		$manga_folder_zips = $manga_folder_root . '/zips';
 		$exploder          = new MSExploder( $manga_folder_zips, $manga_folder_jpgs );
 		$exploder->detonate();
+
+		// Echo message to user when we're done
+		$this->message .= 'Completed exploding zip files!';
 
 	}
 
@@ -150,7 +156,10 @@ class AdminTools {
 
 			// Download the files
 			$downloader    = new MSDownloader( $this->results, $manga_folder_zips );
-			$this->message = $downloader->process_downloads();
+			$downloader->process_downloads();
+
+			// Echo message to user when we're done
+			$this->message .= 'Completed parsing HTML and download zip files!';
 
 		}
 

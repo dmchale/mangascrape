@@ -49,7 +49,7 @@ class MSHelpers {
 		}
 
 		// Now try and create the folder
-		if ( ! mkdir( $new_dir, 0700 ) ) {
+		if ( ! @mkdir( $new_dir, 0700 ) ) {
 			if ( ! $hide_errors ) {
 				wp_die( 'Failed creating `' . $new_dir . '` directory, check folder permissions.' );
 			}

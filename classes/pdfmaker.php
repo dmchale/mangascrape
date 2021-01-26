@@ -12,103 +12,141 @@ class MSPDFMaker {
 		$this->destination_folder = $destination_folder;
 	}
 
+
+	/**
+	 *
+	 */
 	public function make_pdfs() {
 
 		$chapters = $this->read_dirs( $this->source_folder );
 		foreach ( $chapters as $chapter ) {
-			echo 'Found `' . $chapter . '`<br />';
 			$this->make_pdf( $chapter );
 		}
 
 	}
 
-	private function make_pdf( $this_path ) {
+
+	/**
+	 * @param $str
+	 *
+	 * @return string
+	 */
+	private function fix_pdf_numbering( $str ) {
+		$str            = str_replace( '.pdf', '', $str );    // Clean off the file extension
+		$arr_str        = explode( '_', $str );                    // Get array of string parts
+		$chapter_number = array_pop( $arr_str );                     // Get the value of the last part of the array (the page number)
+		$arr_str[]      = sprintf( '%04u', $chapter_number );        // Force number to a 4-digit number with leading zeros
+
+		return implode( '_', $arr_str );                        // Return the string glued back together
+	}
+
+
+	/**
+	 * @param $source_path
+	 */
+	private function make_pdf( $source_path ) {
 
 		require_once( plugin_dir_path( __FILE__ ) . '../lib/fpdf/fpdf.php' );
 
-		$pdf_name = basedir( $this_path ) . '.pdf';
+		$clean_base_name = $this->fix_pdf_numbering( basename( $source_path ) );
+		$pdf_name = $clean_base_name . '.pdf';
 
-		require($_SERVER['DOCUMENT_ROOT'].'/banjo-glossary/fpdf/fpdf.php');
+		/*
+		 * Taken and modified from https://legacy.imagemagick.org/discourse-server/viewtopic.php?t=27216
+		 */
+		$pdf = new \FPDF( 'P', 'pt', 'Letter' );
 
-		// TODO: test and modify this code!!
-		// Taken from https://legacy.imagemagick.org/discourse-server/viewtopic.php?t=27216
+		// THESE VARS WILL BE SET DYNAMICALLY
+		$pdf->SetTitle( $clean_base_name, 1 );
+		$pdf->SetAuthor( 'MangaScrape: a WordPress Plugin', 1 );
+		$pdf->SetSubject( 'Manga', 1 );
+		$pdf->SetCompression( 1 );
 
-/*
-		$pdf = new FPDF('P','pt','Letter');
-// THESE VARS WILL BE SET DYNAMICALLY
-		$pdf->SetTitle('Create PDF test using FPDF',1);
-		$pdf->SetAuthor('The Banjo Glossary Project',1);
-		$pdf->SetSubject('Ongoing tests to create pdf files',1);
-		$pdf->SetCompression(1);
+		// LETTER size pages
+		// UNIT IS POINTS, 72 PTS = 1 INCH
+		$pageW       = 612 - 24; // 8.5 inches wide with .125 margin left and right
+		$pageH       = 792 - 24; // 11 inches tall with .125 margin top and bottom
+		$fixedMargin = 12; // .25 inch
+		$threshold   = $pageW / $pageH;
 
-// LETTER size pages
-// UNIT IS POINTS, 72 PTS = 1 INCH
-		$pageW = 612 - 36; // 8.5 inches wide with .25 margin left and right
-		$pageH = 792 - 36; // 11 inches tall with .25 margin top and bottom
-		$fixedMargin = 18; // .25 inch
-		$threshold = $pageW / $pageH;
+		$images = glob( $source_path . '/*.jpg' );
+		natsort( $images );     // Sorts the array the way a human would .... _1 to _2 to _3 instead of _1 to _10 to _11
 
-// IF IMAGE W÷H IS UNDER THRESHOLD, CONSTRAIN THE HEIGHT
-// IF IMAGE W÷H IS OVER THRESHOLD, CONSTRAIN THE WIDTH
+		foreach ( $images as $image ) {
+			$currentImage = $image;
 
-		$readPath = $_SERVER['DOCUMENT_ROOT'].'/banjo-glossary/_temp_/';
-		$writePath = $_SERVER['DOCUMENT_ROOT'].'/banjo-glossary/';
-
-		function sizeImage($thisImage) {
-			global $pageW,$pageH,$fixedMargin,$threshold;
-
-			list($thisW,$thisH) = getimagesize($thisImage);
-
-			if($thisW<=$pageW && $thisH<=$pageH){
-				// DO NOT RESIZE IMAGE, JUST CENTER IT HORIZONTALLY
-				$newLeftMargin = centerMe($thisW);
-				$leftMargin = $newLeftMargin;
-				return array('leftMargin' => $leftMargin, 'width' => $thisW);
-			} else {
-				$thisThreshold = $thisW / $thisH;
-				if($thisThreshold>=$threshold) {
-					$width = $pageW;
-					$leftMargin = $fixedMargin;
-				} else {
-					$thisMultiplier = $pageH / $thisH;
-					$width = $thisW * $thisMultiplier;
-					$width = round($width, 0, PHP_ROUND_HALF_DOWN);
-					// CENTER ON PAGE IF NOT FULL WIDTH
-					$newLeftMargin = centerMe($width);
-					$leftMargin = $newLeftMargin;
-				}
-				return array('leftMargin' => $leftMargin, 'width' => $width);
-			}
-		}
-
-		function centerMe($thisWidth){
-			global $pageW;
-			$newMargin = ($pageW - $thisWidth) / 2;
-			$newMargin = round($newMargin, 0, PHP_ROUND_HALF_DOWN);
-			return $newMargin;
-		}
-
-// THIS VAR WILL BE POPULATED DYNAMICALLY BUT HARD CORDED FOR THIS EXAMPLE
-		$imageLIST = array('tab-angeline-the-ba-12739-5552112112010.jpg','tab-at-the-end-of-t-11988-541238102009.jpg','tab-blue-night-(lam-12956-2337161222010.jpg','tab-eighth-of-janua-12698-2650161012010.jpg','tab-foggy-mountain--19894-3131218122013.jpg','tallThin.jpg');
-
-		foreach ($imageLIST as $value) {
-			$currentImage = $readPath.$value;
-			$reSized = sizeImage($currentImage);
-			$width = $reSized['width'];
-			$leftMargin = $reSized['leftMargin'];
+			// IF IMAGE W÷H IS UNDER THRESHOLD, CONSTRAIN THE HEIGHT
+			// IF IMAGE W÷H IS OVER THRESHOLD, CONSTRAIN THE WIDTH
+			$reSized      = $this->sizeImage( $currentImage, $pageW, $pageH, $fixedMargin, $threshold );
+			$width        = $reSized['width'];
+			$leftMargin   = $reSized['leftMargin'];
 			$pdf->AddPage();
-			$pdf->Image($currentImage,$leftMargin,18,$width);
 
-		} // LOOP
+			$pdf->Image( $currentImage, $leftMargin, 18, $width );
+		}
 
-		$pdf->Output($writePath.'/TEST-PDFwrite99.pdf','F');
-
-		echo 'All done.';
-		*/
-
+		$pdf->Output( $this->destination_folder . '/' . $pdf_name, 'F' );
 
 	}
 
+
+	/**
+	 * @param $thisImage
+	 * @param $pageW
+	 * @param $pageH
+	 * @param $fixedMargin
+	 * @param $threshold
+	 *
+	 * @return array
+	 */
+	private function sizeImage( $thisImage, $pageW, $pageH, $fixedMargin, $threshold ) {
+
+		list( $thisW, $thisH ) = getimagesize( $thisImage );
+
+		if ( $thisW <= $pageW && $thisH <= $pageH ) {
+			// DO NOT RESIZE IMAGE, JUST CENTER IT HORIZONTALLY
+			$newLeftMargin = $this->centerMe( $thisW, $pageW );
+			$leftMargin    = $newLeftMargin;
+
+			return array( 'leftMargin' => $leftMargin, 'width' => $thisW );
+		} else {
+			$thisThreshold = $thisW / $thisH;
+			if ( $thisThreshold >= $threshold ) {
+				$width      = $pageW;
+				$leftMargin = $fixedMargin;
+			} else {
+				$thisMultiplier = $pageH / $thisH;
+				$width          = $thisW * $thisMultiplier;
+				$width          = round( $width, 0, PHP_ROUND_HALF_DOWN );
+				// CENTER ON PAGE IF NOT FULL WIDTH
+				$newLeftMargin = $this->centerMe( $width, $pageW );
+				$leftMargin    = $newLeftMargin;
+			}
+
+			return array( 'leftMargin' => $leftMargin, 'width' => $width );
+		}
+	}
+
+
+	/**
+	 * @param $thisWidth
+	 * @param $pageW
+	 *
+	 * @return float
+	 */
+	private function centerMe( $thisWidth, $pageW ) {
+		$newMargin = ( $pageW - $thisWidth ) / 2;
+		$newMargin = round( $newMargin, 0, PHP_ROUND_HALF_DOWN );
+
+		return $newMargin;
+	}
+
+
+	/**
+	 * @param $path
+	 *
+	 * @return array
+	 */
 	private function read_dirs( $path ) {
 		$arr_folders = array();
 
