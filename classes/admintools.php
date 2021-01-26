@@ -36,6 +36,8 @@ class AdminTools {
 		if ( isset( $_POST['ms_action'] ) ) {
 			if ( 'start_scrape' === $_POST['ms_action'] ) {
 				$this->start_scrape();
+			} elseif ( 'start_manual_jpgs' === $_POST['ms_action'] ) {
+				$this->manually_get_jpgs();
 			} elseif ( 'start_explode_zips' === $_POST['ms_action'] ) {
 				$this->explode_zips();
 			} elseif ( 'start_make_pdfs' === $_POST['ms_action'] ) {
@@ -43,6 +45,42 @@ class AdminTools {
 			}
 		}
 	}
+
+
+	private function manually_get_jpgs() {
+		// Check nonce
+		check_admin_referer( 'manual_jpgs', 'manual_jpgs_nonce' );
+
+		// Check permissions
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		// Collect vars
+		$folder_name    = $_POST['folder_name'];
+		$code_to_scrape = $_POST['code_to_scrape'];
+
+		// Confirm we have all the vars we expect
+		if ( ! $folder_name || ! $code_to_scrape ) {
+			wp_die( 'Variables missing. Please try again' );
+		}
+
+		// TODO: Finish processing code
+//		// Create our destination folder so we can save the PDF files somewhere
+//		$manga_folder_root = MANGASCRAPE_UPLOAD_DIR . MSHelpers::make_valid_foldername( $folder_name );
+//		$manga_folder_pdfs = $manga_folder_root . '/pdfs';
+//		MSHelpers::create_dir( $manga_folder_pdfs, true );
+//
+//		// Make the PDF files
+//		$manga_folder_jpgs = $manga_folder_root . '/jpgs';
+//		$pdf_maker         = new MSPDFMaker( $manga_folder_jpgs, $manga_folder_pdfs );
+//		$pdf_maker->make_pdfs();
+
+		// Echo message to user when we're done
+		$this->message .= 'Completed getting JPG files manually!';
+
+    }
+
 
 	/**
 	 * Create PDF files from the JPG files we already downloaded
@@ -196,7 +234,8 @@ class AdminTools {
 		$tab = '';
 		if ( isset( $_GET['tab'] ) ) {
 			switch ( strtolower( $_GET['tab'] ) ) {
-				case 'explode_zips':
+				case 'manual_jpgs':
+			    case 'explode_zips':
 				case 'make_pdfs':
 					$tab = strtolower( $_GET['tab'] );
 					break;
@@ -209,6 +248,9 @@ class AdminTools {
             <a href="?page=magascrape_admin" class="nav-tab <?php if ( '' === $tab ) {
 				echo 'nav-tab-active';
 			} ?>">Download Zips</a>
+            <a href="?page=magascrape_admin&tab=manual_jpgs" class="nav-tab <?php if ( 'manual_jpgs' === $tab ) {
+		        echo 'nav-tab-active';
+	        } ?>">Manually Get JPGs</a>
             <a href="?page=magascrape_admin&tab=explode_zips" class="nav-tab <?php if ( 'explode_zips' === $tab ) {
 				echo 'nav-tab-active';
 			} ?>">Explode Zips</a>
@@ -226,8 +268,8 @@ class AdminTools {
 				<?php wp_nonce_field( 'get_zips', 'get_zips_nonce' ); ?>
                 <input type="hidden" name="ms_action" value="start_scrape"/>
                 <div style="padding-top:20px;">
-                    <input type="text" name="folder_name" placeholder="Folder to Save To" required="required"
-                           aria-required="true">
+                    <input type="text" name="folder_name" placeholder="Folder to Save To (eg: `The_Promised_Neverland`)" style="width:50em;"
+                           required="required" aria-required="true">
                 </div>
                 <div style="padding-top:20px;">
                     <textarea name="code_to_scrape" placeholder="Copy/paste the `manga_series_list` element here"
@@ -235,6 +277,29 @@ class AdminTools {
                 </div>
                 <div style="padding-top:20px;">
                     <input type="submit" name="submit" value="Parse HTML and Download"/>
+                </div>
+            </form>
+        </div>
+
+        <div class="tab_manual_jpgs" style="display:<?php if ( 'manual_jpgs' === $tab ) {
+			echo 'block';
+		} else {
+			echo 'none';
+		} ?>">
+            <form method="post">
+				<?php wp_nonce_field( 'manual_jpgs', 'manual_jpgs_nonce' ); ?>
+                <input type="hidden" name="ms_action" value="start_manual_jpgs"/>
+                <div style="padding-top:20px;">
+                    <input type="text" name="folder_name" style="width:50em;"
+                           placeholder="Folder the jpgs will save to, INCLUDING CHAPTER (eg: `Alice_In_Borderland/Imawa_No_Kuni_No_Alice_22`)" required="required"
+                           aria-required="true">
+                </div>
+                <div style="padding-top:20px;">
+                    <textarea name="code_to_scrape" placeholder="Copy/paste the `slideshow_container` element here"
+                           style="width:50em;height:20em;" required="required" aria-required="true"></textarea>
+                </div>
+                <div style="padding-top:20px;">
+                    <input type="submit" name="submit" value="Manually get JPGs"/>
                 </div>
             </form>
         </div>
