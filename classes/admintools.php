@@ -58,23 +58,38 @@ class AdminTools {
 
 		// Collect vars
 		$folder_name    = $_POST['folder_name'];
+		$chapter_name   = $_POST['chapter_name'];
 		$code_to_scrape = $_POST['code_to_scrape'];
 
 		// Confirm we have all the vars we expect
-		if ( ! $folder_name || ! $code_to_scrape ) {
+		if ( ! $folder_name || ! $chapter_name || ! $code_to_scrape ) {
 			wp_die( 'Variables missing. Please try again' );
 		}
 
-		// TODO: Finish processing code
-//		// Create our destination folder so we can save the PDF files somewhere
-//		$manga_folder_root = MANGASCRAPE_UPLOAD_DIR . MSHelpers::make_valid_foldername( $folder_name );
-//		$manga_folder_pdfs = $manga_folder_root . '/pdfs';
-//		MSHelpers::create_dir( $manga_folder_pdfs, true );
-//
-//		// Make the PDF files
-//		$manga_folder_jpgs = $manga_folder_root . '/jpgs';
-//		$pdf_maker         = new MSPDFMaker( $manga_folder_jpgs, $manga_folder_pdfs );
-//		$pdf_maker->make_pdfs();
+		// Ensure we have a jpgs folder to save to
+		$manga_folder_root = MANGASCRAPE_UPLOAD_DIR . MSHelpers::make_valid_foldername( $folder_name );
+		$manga_folder_jpgs = $manga_folder_root . '/jpgs';
+		MSHelpers::create_dir( $manga_folder_jpgs, true );
+
+		// Make the PDF files
+		$parser        = new MSParseMarkup( $code_to_scrape );
+		$this->results = $parser->get_results( 'jpgs' );
+
+        // Only process if we have results in our markup
+		if ( sizeof( $this->results ) > 0 ) {
+
+			// Create our destination folder
+			$manga_folder_chapter = $manga_folder_jpgs . '/' . MSHelpers::make_valid_foldername( $chapter_name );
+			MSHelpers::create_dir( $manga_folder_chapter );
+
+			// Download the files
+			$downloader    = new MSDownloader( $this->results, $manga_folder_chapter );
+			$downloader->process_downloads( '', 0, 2 );
+
+			// Echo message to user when we're done
+			$this->message .= 'Completed parsing HTML and download jpg files!';
+
+		}
 
 		// Echo message to user when we're done
 		$this->message .= 'Completed getting JPG files manually!';
@@ -180,7 +195,7 @@ class AdminTools {
 
 		// Parse the links from the provided markup
 		$parser        = new MSParseMarkup( $code_to_scrape );
-		$this->results = $parser->get_results();
+		$this->results = $parser->get_results( 'zips' );
 
 		// Only process if we have results in our markup
 		if ( sizeof( $this->results ) > 0 ) {
@@ -194,7 +209,7 @@ class AdminTools {
 
 			// Download the files
 			$downloader    = new MSDownloader( $this->results, $manga_folder_zips );
-			$downloader->process_downloads();
+			$downloader->process_downloads( '.zip' );
 
 			// Echo message to user when we're done
 			$this->message .= 'Completed parsing HTML and download zip files!';
@@ -291,7 +306,12 @@ class AdminTools {
                 <input type="hidden" name="ms_action" value="start_manual_jpgs"/>
                 <div style="padding-top:20px;">
                     <input type="text" name="folder_name" style="width:50em;"
-                           placeholder="Folder the jpgs will save to, INCLUDING CHAPTER (eg: `Alice_In_Borderland/Imawa_No_Kuni_No_Alice_22`)" required="required"
+                           placeholder="Folder the jpgs will save to (eg: `Alice_In_Borderland`)" required="required"
+                           aria-required="true">
+                </div>
+                <div style="padding-top:20px;">
+                    <input type="text" name="chapter_name" style="width:50em;"
+                           placeholder="Chapter for folder name the jpgs will save to (eg: `Imawa_No_Kuni_No_Alice_22`)" required="required"
                            aria-required="true">
                 </div>
                 <div style="padding-top:20px;">
