@@ -1237,6 +1237,8 @@ protected function _parsejpg($file)
 	$a = getimagesize($file);
 	if(!$a)
 		$this->Error('Missing or incorrect image file: '.$file);
+	if($a[2]==3)
+		return $this->_parsepng($file);
 	if($a[2]!=2)
 		$this->Error('Not a JPEG file: '.$file);
 	if(!isset($a['channels']) || $a['channels']==3)
