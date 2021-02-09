@@ -27,28 +27,13 @@ class MSPDFMaker {
 
 
 	/**
-	 * @param $str
-	 *
-	 * @return string
-	 */
-	private function fix_pdf_numbering( $str ) {
-		$str            = str_replace( '.pdf', '', $str );    // Clean off the file extension
-		$arr_str        = explode( '_', $str );                    // Get array of string parts
-		$chapter_number = array_pop( $arr_str );                     // Get the value of the last part of the array (the page number)
-		$arr_str[]      = sprintf( '%04u', $chapter_number );        // Force number to a 4-digit number with leading zeros
-
-		return implode( '_', $arr_str );                        // Return the string glued back together
-	}
-
-
-	/**
 	 * @param $source_path
 	 */
 	private function make_pdf( $source_path ) {
 
 		require_once( plugin_dir_path( __FILE__ ) . '../lib/fpdf/fpdf.php' );
 
-		$clean_base_name = $this->fix_pdf_numbering( basename( $source_path ) );
+		$clean_base_name = basename( $source_path );
 		$pdf_name = $clean_base_name . '.pdf';
 
 		/*
