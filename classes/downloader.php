@@ -4,8 +4,8 @@ namespace mangascrape;
 
 class MSDownloader {
 
-	private $results = array();
-	private $destination_folder = '';
+	private array $results;
+	private string $destination_folder;
 
 	function __construct( $results, $destination_folder ) {
 		$this->results            = ( array ) $results;

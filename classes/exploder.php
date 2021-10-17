@@ -2,10 +2,12 @@
 
 namespace mangascrape;
 
+use ZipArchive;
+
 class MSExploder {
 
-	private $source_folder = '';
-	private $destination_folder = '';
+	private string $source_folder;
+	private string $destination_folder;
 
 	function __construct( $source_folder, $destination_folder ) {
 		$this->source_folder      = $source_folder;
@@ -17,7 +19,7 @@ class MSExploder {
 		$str_glob = $this->source_folder . '/*.zip';
 		$files    = glob( $str_glob );
 
-		$zip_archive = new \ZipArchive;
+		$zip_archive = new ZipArchive;
 
 		foreach ( $files as $file ) {
 
