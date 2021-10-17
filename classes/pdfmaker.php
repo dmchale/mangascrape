@@ -2,10 +2,12 @@
 
 namespace mangascrape;
 
+use FPDF;
+
 class MSPDFMaker {
 
-	private $source_folder = '';
-	private $destination_folder = '';
+	private string $source_folder;
+	private string $destination_folder;
 
 	function __construct( $source_folder, $destination_folder ) {
 		$this->source_folder      = $source_folder;
@@ -31,7 +33,7 @@ class MSPDFMaker {
 	 */
 	private function make_pdf( $source_path ) {
 
-		require_once( plugin_dir_path( __FILE__ ) . '../lib/fpdf/fpdf.php' );
+		require_once( MANGASCRAPE_DIR_PATH . 'lib/fpdf/fpdf.php' );
 
 		$clean_base_name = basename( $source_path );
 		$pdf_name = $clean_base_name . '.pdf';
@@ -39,7 +41,7 @@ class MSPDFMaker {
 		/*
 		 * Taken and modified from https://legacy.imagemagick.org/discourse-server/viewtopic.php?t=27216
 		 */
-		$pdf = new \FPDF( 'P', 'pt', 'Letter' );
+		$pdf = new FPDF( 'P', 'pt', 'Letter' );
 
 		// THESE VARS WILL BE SET DYNAMICALLY
 		$pdf->SetTitle( $clean_base_name, 1 );
@@ -84,7 +86,7 @@ class MSPDFMaker {
 	 *
 	 * @return array
 	 */
-	private function sizeImage( $thisImage, $pageW, $pageH, $fixedMargin, $threshold ) {
+	private function sizeImage( $thisImage, $pageW, $pageH, $fixedMargin, $threshold ): array {
 
 		list( $thisW, $thisH ) = getimagesize( $thisImage );
 
@@ -119,11 +121,9 @@ class MSPDFMaker {
 	 *
 	 * @return float
 	 */
-	private function centerMe( $thisWidth, $pageW ) {
+	private function centerMe( $thisWidth, $pageW ): float {
 		$newMargin = ( $pageW - $thisWidth ) / 2;
-		$newMargin = round( $newMargin, 0, PHP_ROUND_HALF_DOWN );
-
-		return $newMargin;
+		return round( $newMargin, 0, PHP_ROUND_HALF_DOWN );
 	}
 
 
@@ -132,7 +132,7 @@ class MSPDFMaker {
 	 *
 	 * @return array
 	 */
-	private function read_dirs( $path ) {
+	private function read_dirs( $path ): array {
 		$arr_folders = array();
 
 		$dirHandle = opendir( $path );

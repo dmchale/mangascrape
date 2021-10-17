@@ -27,9 +27,7 @@ class MSHelpers {
 		$str = mb_ereg_replace( "([^\w\s\d\-_])", '', $str );
 
 		// Remove any runs of periods
-		$str = mb_ereg_replace( "([\.]{2,})", '', $str );
-
-		return $str;
+		return mb_ereg_replace( "([\.]{2,})", '', $str );
 
 	}
 
@@ -39,7 +37,7 @@ class MSHelpers {
 	 * @param $new_dir
 	 * @param bool $hide_errors
 	 */
-	public static function create_dir( $new_dir, $hide_errors = false ) {
+	public static function create_dir( $new_dir, bool $hide_errors = false ) {
 
 		// First check to see if the folder exists already
 		if ( is_dir( $new_dir ) ) {

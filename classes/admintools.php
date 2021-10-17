@@ -7,8 +7,8 @@ class AdminTools {
 	/**
 	 * Class Variables
 	 */
-	private $results = null;
-	private $message = '';
+	private array $results;
+	private string $message;
 
 	/**
 	 * AdminTools constructor.
@@ -211,7 +211,6 @@ class AdminTools {
 		// Check permissions
 		if ( ! current_user_can( 'manage_options' ) ) {
 			echo 'You do not have permissions to view this page, cheater';
-
 			return;
 		}
 
@@ -268,12 +267,16 @@ class AdminTools {
 				<?php wp_nonce_field( 'get_zips', 'get_zips_nonce' ); ?>
                 <input type="hidden" name="ms_action" value="start_scrape"/>
                 <div style="padding-top:20px;">
-                    <input type="text" name="folder_name" placeholder="Folder to Save To (eg: `The_Promised_Neverland`)" style="width:50em;"
-                           required="required" aria-required="true">
+                    <label>
+                        <input type="text" name="folder_name" placeholder="Folder to Save To (eg: `The_Promised_Neverland`)" style="width:50em;"
+                               required="required" aria-required="true">
+                    </label>
                 </div>
                 <div style="padding-top:20px;">
-                    <textarea name="code_to_scrape" placeholder="Copy/paste the `manga_series_list` element here"
-                              style="width:50em;height:20em;" required="required" aria-required="true"></textarea>
+                    <label>
+<textarea name="code_to_scrape" placeholder="Copy/paste the `manga_series_list` element here"
+          style="width:50em;height:20em;" required="required" aria-required="true"></textarea>
+                    </label>
                 </div>
                 <div style="padding-top:20px;">
                     <input type="submit" name="submit" value="Parse HTML and Download"/>
@@ -290,13 +293,17 @@ class AdminTools {
 				<?php wp_nonce_field( 'manual_jpgs', 'manual_jpgs_nonce' ); ?>
                 <input type="hidden" name="ms_action" value="start_manual_jpgs"/>
                 <div style="padding-top:20px;">
-                    <input type="text" name="folder_name" style="width:50em;"
-                           placeholder="Folder the jpgs will save to, INCLUDING CHAPTER (eg: `Alice_In_Borderland/Imawa_No_Kuni_No_Alice_22`)" required="required"
-                           aria-required="true">
+                    <label>
+                        <input type="text" name="folder_name" style="width:50em;"
+                               placeholder="Folder the jpgs will save to, INCLUDING CHAPTER (eg: `Alice_In_Borderland/Imawa_No_Kuni_No_Alice_22`)" required="required"
+                               aria-required="true">
+                    </label>
                 </div>
                 <div style="padding-top:20px;">
-                    <textarea name="code_to_scrape" placeholder="Copy/paste the `slideshow_container` element here"
-                           style="width:50em;height:20em;" required="required" aria-required="true"></textarea>
+                    <label>
+<textarea name="code_to_scrape" placeholder="Copy/paste the `slideshow_container` element here"
+       style="width:50em;height:20em;" required="required" aria-required="true"></textarea>
+                    </label>
                 </div>
                 <div style="padding-top:20px;">
                     <input type="submit" name="submit" value="Manually get JPGs"/>
@@ -313,9 +320,11 @@ class AdminTools {
 				<?php wp_nonce_field( 'explode_zips', 'explode_zips_nonce' ); ?>
                 <input type="hidden" name="ms_action" value="start_explode_zips"/>
                 <div style="padding-top:20px;">
-                    <input type="text" name="folder_name" style="width:50em;"
-                           placeholder="Folder the zips are in (eg: `The_Promised_Neverland`)" required="required"
-                           aria-required="true">
+                    <label>
+                        <input type="text" name="folder_name" style="width:50em;"
+                               placeholder="Folder the zips are in (eg: `The_Promised_Neverland`)" required="required"
+                               aria-required="true">
+                    </label>
                 </div>
                 <div style="padding-top:20px;">
                     <input type="submit" name="submit" value="Explode!"/>
@@ -332,9 +341,11 @@ class AdminTools {
 				<?php wp_nonce_field( 'make_pdfs', 'make_pdfs_nonce' ); ?>
                 <input type="hidden" name="ms_action" value="start_make_pdfs"/>
                 <div style="padding-top:20px;">
-                    <input type="text" name="folder_name" style="width:50em;"
-                           placeholder="Folder the jpgs are in (eg: `The_Promised_Neverland`)" required="required"
-                           aria-required="true">
+                    <label>
+                        <input type="text" name="folder_name" style="width:50em;"
+                               placeholder="Folder the jpgs are in (eg: `The_Promised_Neverland`)" required="required"
+                               aria-required="true">
+                    </label>
                 </div>
                 <div style="padding-top:20px;">
                     <input type="submit" name="submit" value="Make PDF files"/>
