@@ -52,7 +52,72 @@ class AdminTools {
 			} elseif ( 'start_make_pdfs' === $_POST['ms_action'] ) {
 				$this->make_pdfs();
 			}
+		} elseif ( isset( $_GET['tab'] ) && 'kill_first_steps' === $_GET['tab'] ) {
+			$this->kill_first_steps();
 		}
+	}
+
+    private function kill_first_steps() {
+	    // Check permissions
+	    if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die('Invalid permissions');
+	    }
+
+	    // Collect vars
+	    $folder_name    = $_GET['folder'];
+
+	    // Confirm we have all the vars we expect
+	    if ( ! $folder_name ) {
+		    wp_die( 'Variables missing. Please try again' );
+	    }
+
+        // Get the zips/jpgs folder paths and delete them with their contents
+	    $folder_name = MSHelpers::make_valid_foldername( $folder_name );
+	    $manga_folder_root = MANGASCRAPE_UPLOAD_DIR . $folder_name;
+	    $manga_folder_zips = $manga_folder_root . '/zips';
+        $manga_folder_jpgs = $manga_folder_root . '/jpgs';
+
+        if ( is_dir( $manga_folder_zips ) ) {
+	        $this->delete_directory( $manga_folder_zips );
+        } else {
+	        // Echo error message
+	        $this->message .= sprintf( '<p>Zips folder not found for `%s`</p>', $manga_folder_zips );
+        }
+
+	    if ( is_dir( $manga_folder_jpgs ) ) {
+		    $this->delete_directory( $manga_folder_jpgs );
+	    } else {
+		    // Echo error message
+		    $this->message .= sprintf( '<p>Jpgs folder not found for `%s`</p>', $manga_folder_jpgs );
+	    }
+
+        // Output final message
+	    $this->message .= '<p>Finished deleting zips and jpgs!</p>';
+
+    }
+
+
+	private function delete_directory( $dir ) {
+		if ( ! file_exists( $dir ) ) {
+			return true;
+		}
+
+		if ( ! is_dir( $dir ) ) {
+			return unlink( $dir );
+		}
+
+		foreach ( scandir( $dir ) as $item) {
+			if ( $item == '.' || $item == '..' ) {
+				continue;
+			}
+
+			if ( ! $this->delete_directory( $dir . DIRECTORY_SEPARATOR . $item ) ) {
+				return false;
+			}
+
+		}
+
+		return rmdir( $dir );
 	}
 
 
@@ -113,7 +178,8 @@ class AdminTools {
 		}
 
 		// Create our destination folder so we can save the PDF files somewhere
-		$manga_folder_root = MANGASCRAPE_UPLOAD_DIR . MSHelpers::make_valid_foldername( $folder_name );
+		$folder_name = MSHelpers::make_valid_foldername( $folder_name );
+		$manga_folder_root = MANGASCRAPE_UPLOAD_DIR . $folder_name;
 		$manga_folder_pdfs = $manga_folder_root . '/pdfs';
 		MSHelpers::create_dir( $manga_folder_pdfs, true );
 
@@ -124,6 +190,7 @@ class AdminTools {
 
 		// Echo message to user when we're done
 		$this->message .= 'Completed making PDF files!';
+		$this->message .= sprintf( '<br /><br /><a href="?page=magascrape_admin&tab=kill_first_steps&folder=%s">Click here to kill the zips and jpgs</a>', $folder_name );
 
 	}
 
@@ -252,6 +319,7 @@ class AdminTools {
 				case 'manual_jpgs':
 			    case 'explode_zips':
 				case 'make_pdfs':
+                case 'kill_first_steps':
 					$tab = strtolower( $_GET['tab'] );
 					break;
 			}
@@ -262,6 +330,7 @@ class AdminTools {
         $tab_class['manual_jpgs'] = ( 'manual_jpgs' === $tab ) ? 'nav-tab-active' : '';
         $tab_class['explode_zips'] = ( 'explode_zips' === $tab ) ? 'nav-tab-active' : '';
         $tab_class['make_pdfs'] = ( 'make_pdfs' === $tab ) ? 'nav-tab-active' : '';
+        $tab_class['kill_first_steps'] = ( 'kill_first_steps' === $tab ) ? 'nav-tab-active' : '';
 		?>
 
         <nav class="nav-tab-wrapper">
@@ -269,6 +338,9 @@ class AdminTools {
             <a href="?page=magascrape_admin&tab=manual_jpgs" class="nav-tab <?php echo $tab_class['manual_jpgs']; ?>">Manually Get JPGs</a>
             <a href="?page=magascrape_admin&tab=explode_zips" class="nav-tab <?php echo $tab_class['explode_zips']; ?>">Explode Zips</a>
             <a href="?page=magascrape_admin&tab=make_pdfs" class="nav-tab <?php echo $tab_class['make_pdfs']; ?>">Make PDFs</a>
+            <?php if ( '' != $tab_class['kill_first_steps'] ) { ?>
+                <a href="?page=magascrape_admin&tab=kill_first_steps" class="nav-tab <?php echo $tab_class['kill_first_steps']; ?>">Final Step</a>
+            <?php } ?>
         </nav>
 
         <div class="tab_download_zips" style="display:<?php if ( '' === $tab ) {
@@ -372,6 +444,14 @@ class AdminTools {
                     <input type="submit" name="submit" value="Make PDF files"/>
                 </div>
             </form>
+        </div>
+
+        <div class="tab_kill_first_steps" style="display:<?php if ( 'kill_first_steps' === $tab ) {
+			echo 'block';
+		} else {
+			echo 'none';
+		} ?>">
+            <p>Nothing to show here, chief. You just finished, congratulations!</p>
         </div>
 
 		<?php
