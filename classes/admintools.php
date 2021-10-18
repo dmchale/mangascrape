@@ -14,8 +14,17 @@ class AdminTools {
 	 * AdminTools constructor.
 	 */
 	function __construct() {
+        $this->initialize_variables();
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 	}
+
+	/**
+	 * Does what it says on the tin
+	 */
+    private function initialize_variables() {
+	    $this->results = array();
+	    $this->message = '';
+    }
 
 	/**
 	 * Register Tools menu with WordPress
@@ -141,7 +150,8 @@ class AdminTools {
 		}
 
 		// Create our destination folder so we can explode all the zip files somewhere
-		$manga_folder_root = MANGASCRAPE_UPLOAD_DIR . MSHelpers::make_valid_foldername( $folder_name );
+		$folder_name = MSHelpers::make_valid_foldername( $folder_name );
+		$manga_folder_root = MANGASCRAPE_UPLOAD_DIR . $folder_name;
 		$manga_folder_jpgs = $manga_folder_root . '/jpgs';
 		MSHelpers::create_dir( $manga_folder_jpgs, true );
 
@@ -152,6 +162,7 @@ class AdminTools {
 
 		// Echo message to user when we're done
 		$this->message .= 'Completed exploding zip files!';
+		$this->message .= sprintf( '<br /><br /><a href="?page=magascrape_admin&tab=make_pdfs&folder=%s">Continue to making PDFs</a>', urlencode( $folder_name ) );
 
 	}
 
@@ -186,7 +197,8 @@ class AdminTools {
 		if ( sizeof( $this->results ) > 0 ) {
 
 			// Create our destination folders
-			$manga_folder_root = MANGASCRAPE_UPLOAD_DIR . MSHelpers::make_valid_foldername( $folder_name );
+			$folder_name = MSHelpers::make_valid_foldername( $folder_name );
+			$manga_folder_root = MANGASCRAPE_UPLOAD_DIR . $folder_name;
 			MSHelpers::create_dir( $manga_folder_root );
 
 			$manga_folder_zips = $manga_folder_root . '/zips';
@@ -198,6 +210,7 @@ class AdminTools {
 
 			// Echo message to user when we're done
 			$this->message .= 'Completed parsing HTML and download zip files!';
+			$this->message .= sprintf( '<br /><br /><a href="?page=magascrape_admin&tab=explode_zips&folder=%s">Continue to extracting zips</a>', urlencode( $folder_name ) );
 
 		}
 
@@ -229,7 +242,10 @@ class AdminTools {
 			echo '</p>';
 		}
 
-		// See if one of the tabs is currently selected
+        // Prefill the folder name if one was passed
+		$folder_name = ( isset( $_GET['folder'] ) ) ? htmlspecialchars( $_GET['folder'] ) : '';
+
+		// See if one of the tabs is currently selected, but only allow approved values
 		$tab = '';
 		if ( isset( $_GET['tab'] ) ) {
 			switch ( strtolower( $_GET['tab'] ) ) {
@@ -241,21 +257,18 @@ class AdminTools {
 			}
 		}
 
+		$tab_class = array();
+        $tab_class['default'] = ( '' === $tab ) ? 'nav-tab-active' : '';
+        $tab_class['manual_jpgs'] = ( 'manual_jpgs' === $tab ) ? 'nav-tab-active' : '';
+        $tab_class['explode_zips'] = ( 'explode_zips' === $tab ) ? 'nav-tab-active' : '';
+        $tab_class['make_pdfs'] = ( 'make_pdfs' === $tab ) ? 'nav-tab-active' : '';
 		?>
 
         <nav class="nav-tab-wrapper">
-            <a href="?page=magascrape_admin" class="nav-tab <?php if ( '' === $tab ) {
-				echo 'nav-tab-active';
-			} ?>">Download Zips</a>
-            <a href="?page=magascrape_admin&tab=manual_jpgs" class="nav-tab <?php if ( 'manual_jpgs' === $tab ) {
-		        echo 'nav-tab-active';
-	        } ?>">Manually Get JPGs</a>
-            <a href="?page=magascrape_admin&tab=explode_zips" class="nav-tab <?php if ( 'explode_zips' === $tab ) {
-				echo 'nav-tab-active';
-			} ?>">Explode Zips</a>
-            <a href="?page=magascrape_admin&tab=make_pdfs" class="nav-tab <?php if ( 'make_pdfs' === $tab ) {
-				echo 'nav-tab-active';
-			} ?>">Make PDFs</a>
+            <a href="?page=magascrape_admin" class="nav-tab <?php echo $tab_class['default']; ?>">Download Zips</a>
+            <a href="?page=magascrape_admin&tab=manual_jpgs" class="nav-tab <?php echo $tab_class['manual_jpgs']; ?>">Manually Get JPGs</a>
+            <a href="?page=magascrape_admin&tab=explode_zips" class="nav-tab <?php echo $tab_class['explode_zips']; ?>">Explode Zips</a>
+            <a href="?page=magascrape_admin&tab=make_pdfs" class="nav-tab <?php echo $tab_class['make_pdfs']; ?>">Make PDFs</a>
         </nav>
 
         <div class="tab_download_zips" style="display:<?php if ( '' === $tab ) {
@@ -268,7 +281,9 @@ class AdminTools {
                 <input type="hidden" name="ms_action" value="start_scrape"/>
                 <div style="padding-top:20px;">
                     <label>
-                        <input type="text" name="folder_name" placeholder="Folder to Save To (eg: `The_Promised_Neverland`)" style="width:50em;"
+                        <input type="text" name="folder_name" style="width:50em;"
+                               placeholder="Folder to Save To (eg: `The_Promised_Neverland`)"
+                               value="<?php echo $folder_name; ?>"
                                required="required" aria-required="true">
                     </label>
                 </div>
@@ -295,7 +310,9 @@ class AdminTools {
                 <div style="padding-top:20px;">
                     <label>
                         <input type="text" name="folder_name" style="width:50em;"
-                               placeholder="Folder the jpgs will save to, INCLUDING CHAPTER (eg: `Alice_In_Borderland/Imawa_No_Kuni_No_Alice_22`)" required="required"
+                               placeholder="Folder the jpgs will save to, INCLUDING CHAPTER (eg: `Alice_In_Borderland/Imawa_No_Kuni_No_Alice_22`)"
+                               required="required"
+                               value="<?php echo $folder_name; ?>"
                                aria-required="true">
                     </label>
                 </div>
@@ -322,7 +339,9 @@ class AdminTools {
                 <div style="padding-top:20px;">
                     <label>
                         <input type="text" name="folder_name" style="width:50em;"
-                               placeholder="Folder the zips are in (eg: `The_Promised_Neverland`)" required="required"
+                               placeholder="Folder the zips are in (eg: `The_Promised_Neverland`)"
+                               required="required"
+                               value="<?php echo $folder_name; ?>"
                                aria-required="true">
                     </label>
                 </div>
@@ -343,7 +362,9 @@ class AdminTools {
                 <div style="padding-top:20px;">
                     <label>
                         <input type="text" name="folder_name" style="width:50em;"
-                               placeholder="Folder the jpgs are in (eg: `The_Promised_Neverland`)" required="required"
+                               placeholder="Folder the jpgs are in (eg: `The_Promised_Neverland`)"
+                               required="required"
+                               value="<?php echo $folder_name; ?>"
                                aria-required="true">
                     </label>
                 </div>
