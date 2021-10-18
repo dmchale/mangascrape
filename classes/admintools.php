@@ -216,14 +216,14 @@ class AdminTools {
 
 		echo '<h1>MangaScrape</h1>';
 		echo '<p>Download manga with the tool below!</p>';
-		if ( $this->results ) {
+		if ( isset( $this->results ) ) {
 			echo '<p style="color:red;">';
 			foreach ( $this->results as $result ) {
 				echo basename( $result ) . '<br>';
 			}
 			echo '</p>';
 		}
-		if ( $this->message ) {
+		if ( isset( $this->message ) && '' !== $this->message ) {
 			echo '<p style="color:red;">';
 			echo $this->message;
 			echo '</p>';
